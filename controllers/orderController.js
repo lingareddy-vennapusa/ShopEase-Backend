@@ -1,6 +1,7 @@
 const Order = require("../models/orderModel");
 const Cart = require("../models/cartModel");
 const Product= require("../models/productModel")
+const Razorpay = require("razorpay");
 
 exports.getUserOrders = async (req, res) => {
   const orders = await Order.find({ user: req.user.id })
@@ -60,41 +61,37 @@ exports.placeOrderFromCart = async (req, res) => {
 };
 
 
-const Razorpay = require("razorpay");
-
-const getRazorpayInstance = () => {
-  if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
-    throw new Error("Razorpay keys missing");
-  }
-
-  return new Razorpay({
-    key_id: process.env.RAZORPAY_KEY_ID,
-    key_secret: process.env.RAZORPAY_KEY_SECRET
-  });
-};
-
-
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET
+});
 
 exports.buyNowPayment = async (req, res) => {
   try {
-    const razorpay = getRazorpayInstance();
+    const { productId } = req.body;
+
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
 
     const order = await razorpay.orders.create({
-      amount,
+      amount: product.productPrice * 100, // paisa
       currency: "INR",
       receipt: `buy_now_${Date.now()}`
     });
 
     res.json({
-      razorpayOrderId: order.id,
+      orderId: order.id,
       amount: order.amount
     });
 
   } catch (error) {
-   
-    res.status(500).json({ message: error.message });
+    console.error(error);
+    res.status(500).json({ message: "Payment order failed" });
   }
 };
+
 
 
 
