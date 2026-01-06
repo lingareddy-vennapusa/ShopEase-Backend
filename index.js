@@ -15,7 +15,12 @@ const paymentRoutes= require("./routes/paymentRoutes")
 //middleware
 const app = express()
 app.use(express.json())
-app.use(cors())
+app.use(cors(
+    {
+    origin:"https://shopeasebylingareddy.netlify.app/",
+    credentials:true
+    }
+))
 
 
 app.get("/" ,(req, res)=>res.send("API IS RUNNING"))
