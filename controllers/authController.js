@@ -9,9 +9,17 @@ exports.registerUser = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
+    if (!name || !email || !password) {
+      return res.status(400).json({
+        message: "All fields are required"
+      });
+    }
+
     const userExists = await User.findOne({ email });
     if (userExists) {
-      return res.status(400).json({ message: "User already exists" });
+      return res.status(400).json({
+        message: "User already exists"
+      });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -22,7 +30,6 @@ exports.registerUser = async (req, res) => {
       password: hashedPassword
     });
 
-    
     await sendEmail(
       user.email,
       "Welcome to ShopEase 🎉",
@@ -33,7 +40,6 @@ Welcome to ShopEase!
 Your account has been successfully created.
 You can now login and start shopping.
 
-Happy Shopping 🙂
 – Team ShopEase`
     );
 
@@ -43,9 +49,12 @@ Happy Shopping 🙂
 
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Registration failed" });
+    res.status(500).json({
+      message: "Registration failed"
+    });
   }
 };
+
 
 
 exports.loginUser = async (req, res) => {
@@ -59,7 +68,6 @@ exports.loginUser = async (req, res) => {
       });
     }
 
-    
   
    const user = await User.findOne({
   email: email.toLowerCase().trim()
