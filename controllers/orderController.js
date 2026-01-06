@@ -60,25 +60,24 @@ exports.placeOrderFromCart = async (req, res) => {
 };
 
 
-
 const Razorpay = require("razorpay");
 
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET
-});
+const getRazorpayInstance = () => {
+  if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+    throw new Error("Razorpay keys missing");
+  }
+
+  return new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID,
+    key_secret: process.env.RAZORPAY_KEY_SECRET
+  });
+};
+
 
 
 exports.buyNowPayment = async (req, res) => {
   try {
-    const { productId } = req.body;
-
-    const product = await Product.findById(productId);
-    if (!product) {
-      return res.status(404).json({ message: "Product not found" });
-    }
-
-    const amount = product.productPrice * 100;
+    const razorpay = getRazorpayInstance();
 
     const order = await razorpay.orders.create({
       amount,
@@ -92,10 +91,11 @@ exports.buyNowPayment = async (req, res) => {
     });
 
   } catch (error) {
-
+   
     res.status(500).json({ message: error.message });
   }
 };
+
 
 
 
