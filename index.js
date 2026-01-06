@@ -17,7 +17,7 @@ const app = express()
 app.use(express.json())
 app.use(cors(
     {
-    origin:"https://shopeasebylingareddy.netlify.app/",
+    origin:"https://shopeasebylingareddy.netlify.app",
     credentials:true
     }
 ))
